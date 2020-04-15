@@ -4,6 +4,8 @@ var ex = {};
 
 let sessions = {};
 
+let download_sessions = {};
+
 ex.createSession = function(id){
     let ret = {};
 
@@ -46,10 +48,70 @@ ex.checkSession2 = function(id, key){
     } else if (sessions[id] !== key) {
         ret.result = false;
     } else {
+        sessions[id] = undefined;
         ret.result = true;
     }
     
     return ret;
 }
+
+function DownloadSessionCreate(dir, name){
+    return new Promise(function(resolve, reject){
+        crypto.randomBytes(64, function (err, buffer) {
+            let ret = {};
+            
+            if (err) {
+                ret.error = true;
+                resolve(ret);
+            }
+
+            let key = buffer.toString('hex');
+
+            if (download_sessions[key] === undefined) {
+                download_sessions[key] = {
+                    dir : dir,
+                    name : name
+                }
+                ret.key = key;
+
+                resolve(ret);
+            } else {
+                ret.error = true;
+                resolve(ret);
+            }
+        })
+    })
+}
+
+ex.createDownloadSession = function(dir, name){
+    let ret = {};
+    let flag = false;
+    return new Promise(async function(resolve, reject){
+        while(!flag){
+            let create = await DownloadSessionCreate(dir, name);
+            if(!create.error) {
+                flag = true;
+                ret = create;
+            }
+        }
+
+        resolve(ret);
+    })
+}
+
+ex.checkDownloadSession = function(key){
+    let ret = {};
+
+    if (download_sessions[key] === undefined) {
+        ret.result = false;
+    } else {
+        ret.obj = download_sessions[key];
+        download_sessions[key] = undefined;
+        ret.result = true;
+    }
+    
+    return ret;
+}
+
 
 module.exports = ex;

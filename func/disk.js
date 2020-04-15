@@ -1,5 +1,5 @@
 const disk = require('diskusage');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path_module = require('path');
 
 const path = '/media/pi/Cloud';
@@ -49,6 +49,79 @@ ex.getFileList = function(dir){
                 size : sizestr
             })
         }
+        ret.error = false;
+    } catch (err) {
+        ret.error = true;
+        console.log(err)
+    }
+
+    return ret;
+}
+
+ex.rename = function(dir, currname, newname){
+    let ret = {};
+
+    try {
+        if (dir.charAt(dir.length - 1) !== '/') dir += '/';
+        fs.renameSync(path + dir + currname, path + dir + newname);
+        ret.error = false;
+    } catch (err) {
+        ret.error = true;
+        console.log(err)
+    }
+
+    return ret;
+}
+
+ex.changedir = function(currfulldir, newfulldir){
+    let ret = {};
+
+    try {
+        fs.renameSync(path + currfulldir, path + newfulldir);
+        ret.error = false;
+    } catch (err) {
+        ret.error = true;
+        console.log(err)
+    }
+
+    return ret;
+}
+
+ex.remove = function(dir, target){
+    let ret = {};
+
+    try {
+        if (dir.charAt(dir.length - 1) !== '/') dir += '/';
+        fs.removeSync(path + dir + target);
+        ret.error = false;
+    } catch (err) {
+        ret.error = true;
+        console.log(err)
+    }
+
+    return ret;
+}
+
+ex.createfolder = function(dir, name){
+    let ret = {};
+
+    try {
+        if (dir.charAt(dir.length - 1) !== '/') dir += '/';
+
+        let flag = false;
+        let i = 0;
+        let name2 = name;
+        while (!flag) {
+            if (!fs.existsSync(path + dir + name2)){
+                if(i === 0) fs.mkdirSync(path + dir + name);
+                else fs.mkdirSync(`${path + dir + name} (${i})`);
+                flag = true;
+            } else {
+                i++;
+                name2 = `${name} (${i})`;
+            }
+        }
+
         ret.error = false;
     } catch (err) {
         ret.error = true;
