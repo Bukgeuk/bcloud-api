@@ -29,7 +29,7 @@ ex.checkSession = function(key){
         if (sessions[id] === undefined) continue;
         else if (sessions[id] !== key) continue;
         else {
-            sessions[id] = undefined;
+            delete sessions[id];
             ret.result = true;
             ret.id = id;
             return ret;
@@ -48,7 +48,7 @@ ex.checkSession2 = function(id, key){
     } else if (sessions[id] !== key) {
         ret.result = false;
     } else {
-        sessions[id] = undefined;
+        delete sessions[id];
         ret.result = true;
     }
     
@@ -106,7 +106,7 @@ ex.checkDownloadSession = function(key){
         ret.result = false;
     } else {
         ret.obj = download_sessions[key];
-        download_sessions[key] = undefined;
+        delete download_sessions[key];
         ret.result = true;
     }
     

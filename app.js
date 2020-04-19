@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const cors = require('cors');
+const multer = require('multer');
+const formidable = require('formidable');
 
 // import custom modules
 const disk = require('./func/disk');
@@ -14,14 +16,77 @@ const download = require('./func/download');
 
 const app = express();
 const port = 3000;
+const upath = '/media/pi/Cloud';
+
+let upload = multer({
+    fileFilter: function (req, res, cb) {
+        const form = new formidable.IncomingForm();
+        form.parse(req, (err, fields, files) => {
+            if (!session.checkSession2(req.body.id, req.body.key).result) {
+                req.detectError = true;
+                cb(null, false);
+            } else cb(null, true);
+        });
+    },
+    storage: multer.diskStorage({
+        destination : function (req, file, cb) {
+            cb(null, upath + req.body.dir);
+        },
+        filename : function (req, file, cb) {
+            let flag = false;
+            let i = 0;
+            const rname = file.originalname.substr(0, file.originalname.length - req.body.ext.length);
+            let name2 = rname + req.body.ext;
+            while (!flag) {
+                if (!fs.existsSync(upath + req.body.dir + name2)){
+                    if(i === 0) cb(null, file.originalname);
+                    else cb(null, `${rname} (${i})${req.body.ext}`);
+                    flag = true;
+                } else {
+                    i++;
+                    name2 = `${rname} (${i})${req.body.ext}`;
+                }
+            }
+            
+        }
+    })
+})
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(cors());
 
-app.listen(port, function() {
-    console.log("Server Start on port " + port);
-});
+app.post('/uploadsingle', upload.single('file'), (req, res) => {
+    let ret = {};
+    
+    if(req.detectError){
+        ret.result = false;
+        res.json(ret);
+        return;
+    }
+
+    session.createSession(req.body.id).then(function(data){
+        ret.result = true;
+        ret.session = data;
+        res.json(ret);
+    })
+})
+
+app.post('/uploadmultiple', upload.array('files'), (req, res) => {
+    let ret = {};
+    
+    if(req.detectError){
+        ret.result = false;
+        res.json(ret);
+        return;
+    }
+
+    session.createSession(req.body.id).then(function(data){
+        ret.result = true;
+        ret.session = data;
+        res.json(ret);
+    })
+})
 
 app.post('/login', (req, res) => {
     let ret = {};
@@ -180,3 +245,7 @@ app.get('/download', (req, res) => {
     }
 
 })
+
+app.listen(port, function() {
+    console.log("Server Start on port " + port);
+});
