@@ -22,10 +22,13 @@ let upload = multer({
     fileFilter: function (req, res, cb) {
         const form = new formidable.IncomingForm();
         form.parse(req, (err, fields, files) => {
-            if (!session.checkSession2(req.body.id, req.body.key).result) {
+            if (!session.checkSession2(req.body.id, req.body.key).result && !req.check) {
                 req.detectError = true;
                 cb(null, false);
-            } else cb(null, true);
+            } else {
+                req.check = true;
+                cb(null, true);
+            }
         });
     },
     storage: multer.diskStorage({
