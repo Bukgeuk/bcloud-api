@@ -6,6 +6,8 @@ let sessions = {};
 
 let download_sessions = {};
 
+let upload_sessions = {};
+
 ex.createSession = function(id){
     let ret = {};
 
@@ -17,6 +19,7 @@ ex.createSession = function(id){
             }
             sessions[id] = buffer.toString('hex');
             ret.key = sessions[id];
+
             resolve(ret);
         })
     })
@@ -55,7 +58,7 @@ ex.checkSession2 = function(id, key){
     return ret;
 }
 
-function DownloadSessionCreate(dir, name){
+function downloadSessionCreate(dir, name){
     return new Promise(function(resolve, reject){
         crypto.randomBytes(64, function (err, buffer) {
             let ret = {};
@@ -83,12 +86,41 @@ function DownloadSessionCreate(dir, name){
     })
 }
 
+function uploadSessionCreate(dir, name, ext){
+    return new Promise(function(resolve, reject){
+        crypto.randomBytes(64, function (err, buffer) {
+            let ret = {};
+            
+            if (err) {
+                ret.error = true;
+                resolve(ret);
+            }
+
+            let key = buffer.toString('hex');
+
+            if (upload_sessions[key] === undefined) {
+                upload_sessions[key] = {
+                    dir : dir,
+                    name : name,
+                    ext : ext
+                }
+                ret.key = key;
+
+                resolve(ret);
+            } else {
+                ret.error = true;
+                resolve(ret);
+            }
+        })
+    })
+}
+
 ex.createDownloadSession = function(dir, name){
     let ret = {};
     let flag = false;
     return new Promise(async function(resolve, reject){
-        while(!flag){
-            let create = await DownloadSessionCreate(dir, name);
+        while (!flag) {
+            let create = await downloadSessionCreate(dir, name);
             if(!create.error) {
                 flag = true;
                 ret = create;
@@ -107,6 +139,36 @@ ex.checkDownloadSession = function(key){
     } else {
         ret.obj = download_sessions[key];
         delete download_sessions[key];
+        ret.result = true;
+    }
+    
+    return ret;
+}
+
+ex.createUploadSession = function(id, dir, name, ext){
+    let ret = {};
+    let flag = false;
+    return new Promise(async function(resolve, reject){
+        while(!flag){
+            let create = await uploadSessionCreate(id, dir, name, ext);
+            if(!create.error) {
+                flag = true;
+                ret = create;
+            }
+        }
+
+        resolve(ret);
+    })
+}
+
+ex.checkUploadSession = function(key){
+    let ret = {};
+
+    if (upload_sessions[key] === undefined) {
+        ret.result = false;
+    } else {
+        ret.obj = upload_sessions[key];
+        delete upload_sessions[key];
         ret.result = true;
     }
     
