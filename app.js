@@ -58,7 +58,6 @@ let upload = multer({
                     }
                 }
                 req.i++;
-                cb(null, file.originalname);
             } else {
                 const rname = file.originalname.substr(0, file.originalname.length - req.cus.obj.ext.length);
                 let name2 = rname + req.cus.obj.ext;
@@ -72,7 +71,6 @@ let upload = multer({
                         name2 = `${rname} (${i})${req.cus.obj.ext}`;
                     }
                 }
-                cb(null, file.originalname);
             }
         }
     })
@@ -110,11 +108,8 @@ app.post('/uploadsingle', upload.single('file'), (req, res) => {
 
     log.log("INFO", "app.js", `File uploaded { dir : "${req.cus.obj.dir}", name : "${req.cus.obj.name}" }`);
 
-    session.createSession(req.body.id).then(function(data){
-        ret.result = true;
-        ret.session = data;
-        res.json(ret);
-    })
+    ret.result = true;
+    res.json(ret);
 })
 
 app.post('/uploadmultiple', upload.array('files'), (req, res) => {
@@ -137,11 +132,8 @@ app.post('/uploadmultiple', upload.array('files'), (req, res) => {
 
     log.log("INFO", "app.js", msg);
 
-    session.createSession(req.body.id).then(function(data){
-        ret.result = true;
-        ret.session = data;
-        res.json(ret);
-    })
+    ret.result = true;
+    res.json(ret);
 })
 
 app.post('/login', (req, res) => {
