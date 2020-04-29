@@ -122,7 +122,7 @@ ex.createDownloadSession = function(dir, name){
     return new Promise(async function(resolve, reject){
         while (!flag) {
             let create = await downloadSessionCreate(dir, name);
-            if(!create.error) {
+            if (!create.error) {
                 flag = true;
                 ret = create;
             }

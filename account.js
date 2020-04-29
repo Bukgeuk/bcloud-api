@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 const Account = JSON.parse(fs.readFileSync(path.join(__dirname, 'account.json'), 'utf8'));
 
-var ex = {};
+let ex = {};
 
 ex.getAccountObj = function(){
     return Account;

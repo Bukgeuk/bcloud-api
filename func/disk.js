@@ -2,6 +2,7 @@ const disk = require('diskusage');
 const fs = require('fs-extra');
 const path_module = require('path');
 const log = require('./log');
+const share = require('../linkshare');
 
 const path = '/media/pi/Cloud';
 
@@ -69,6 +70,11 @@ ex.rename = function(dir, currname, newname){
             ret.error = true;
         } else {
             fs.renameSync(path + dir + currname, path + dir + newname);
+
+            if (share.getLinkByFile(dir, currname) !== undefined) {
+                share.modify(dir + currname, dir + newname);
+            }
+
             ret.error = false;
         }
     } catch (err) {
@@ -84,6 +90,11 @@ ex.changedir = function(currfulldir, newfulldir){
 
     try {
         fs.renameSync(path + currfulldir, path + newfulldir);
+
+        if (share.getLinkByDirectory(currfulldir) !== undefined) {
+            share.modify(currfulldir, newfulldir);
+        }
+
         ret.error = false;
     } catch (err) {
         ret.error = true;
@@ -99,6 +110,11 @@ ex.remove = function(dir, target){
     try {
         if (dir.charAt(dir.length - 1) !== '/') dir += '/';
         fs.removeSync(path + dir + target);
+
+        if (share.getLinkByFile(dir, target) !== undefined) {
+            share.remove(dir, target);
+        }
+
         ret.error = false;
     } catch (err) {
         ret.error = true;
@@ -116,6 +132,10 @@ ex.removemultiple = function(dir, target){
 
         for(let i = 0; i < target.length; i++){
             fs.removeSync(path + dir + target[i]);
+
+            if (share.getLinkByFile(dir, target[i]) !== undefined) {
+                share.remove(dir, target[i]);
+            }
         }
 
         ret.error = false;

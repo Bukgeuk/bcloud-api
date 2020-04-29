@@ -15,6 +15,7 @@ const session = require('./func/session');
 const download = require('./func/download');
 const log = require('./func/log');
 const ip = require('./func/ip');
+const share = require('./linkshare');
 
 const app = express();
 const port = 3000;
@@ -356,13 +357,44 @@ app.get('/download', (req, res) => {
 
         if (getfile.error) return;
         else {
-            log.log("INFO", "app.js", `Approve download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.body.file}" }`);
+            log.log("INFO", "app.js", `Approve download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.query.file}" }`);
             res.download(getfile.target, check.obj.name);
         }
+    } else {
+        log.log("WARN", "app.js", `Reject download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.query.file}" }`);
     }
 
-    log.log("WARN", "app.js", `Reject download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.body.file}" }`);
+})
 
+app.post('/share', (req, res) => {
+    let ret = {};
+    
+    if (session.checkSession2(req.body.id, req.body.key).result) {
+        ret.result = true;
+        session.createSession(req.body.id).then(function(data){
+            ret.session = data;
+
+            if (req.body.dir.charAt(req.body.dir.length - 1) !== '/') req.body.dir += '/';
+
+            share.add(req.body.dir, req.body.name).then(function(data2){
+                ret.share = data2;
+                res.json(ret);
+            })
+        })
+    } else {
+        ret.result = false;
+        res.json(ret);
+    }
+})
+
+app.get('/share', (req, res) => {
+    let check = share.getFileByLink(req.query.file);
+
+    if (check === undefined) {
+        res.sendfile('shareError.html');
+    } else {
+        res.download(upath + check, check.substr(check.lastIndexOf('/')));
+    }
 })
 
 app.listen(port, function() {
