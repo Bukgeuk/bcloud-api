@@ -64,8 +64,13 @@ ex.rename = function(dir, currname, newname){
 
     try {
         if (dir.charAt(dir.length - 1) !== '/') dir += '/';
-        fs.renameSync(path + dir + currname, path + dir + newname);
-        ret.error = false;
+
+        if (fs.existsSync(path + dir + newname)) {
+            ret.error = true;
+        } else {
+            fs.renameSync(path + dir + currname, path + dir + newname);
+            ret.error = false;
+        }
     } catch (err) {
         ret.error = true;
         log.log("ERROR", "disk.js", `An error has occurred in rename()\n${err}`);
