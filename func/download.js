@@ -17,7 +17,7 @@ ex.getfile = function(dir, file){
         }
     } catch (err) {
         ret.error = true;
-        console.log(err);
+        log.log("ERROR", "download.js", `An error has occurred in getfile()\n${err}`);
     }
 
     return ret;

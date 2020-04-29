@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const cors = require('cors');
 const multer = require('multer');
-const multiparty = require('multiparty');
 
 // import custom modules
 const disk = require('./func/disk');
@@ -14,6 +13,7 @@ const account = require('./account');
 const session = require('./func/session');
 const download = require('./func/download');
 const log = require('./func/log');
+const ip = require('./func/ip');
 
 const app = express();
 const port = 3000;
@@ -86,7 +86,7 @@ app.post('/beforeupload', (req, res) => {
         ret.result = true;
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
-            session.createUploadSession(req.body.dir, req.body.name, req.body.ext).then(function(data2){
+            session.createUploadSession(req.body.id, req.body.dir, req.body.name, req.body.ext).then(function(data2){
                 ret.uploadSession = data2;
                 res.json(ret);
             })
@@ -101,12 +101,13 @@ app.post('/uploadsingle', upload.single('file'), (req, res) => {
     let ret = {};
     
     if(req.detectError){
+        log.log("WARN", "app.js", `Reject upload request { ip : "${ip.getClientIp(req)}", id : "${req.cus.obj.id}", dir : "${req.cus.obj.dir}", name : "${req.cus.obj.name}", count : 1 }`);
         ret.result = false;
         res.json(ret);
         return;
     }
 
-    log.log("INFO", "app.js", `File uploaded { dir : "${req.cus.obj.dir}", name : "${req.cus.obj.name}" }`);
+    log.log("INFO", "app.js", `1 file uploaded { ip : "${ip.getClientIp(req)}", id : "${req.cus.obj.id}", dir : "${req.cus.obj.dir}", name : "${req.cus.obj.name}" }`);
 
     ret.result = true;
     res.json(ret);
@@ -116,12 +117,23 @@ app.post('/uploadmultiple', upload.array('files'), (req, res) => {
     let ret = {};
     
     if(req.detectError){
+        let msg = `Reject upload request { ip : "${ip.getClientIp(req)}", id : "${req.cus.obj.id}", dir : "${req.cus.obj.dir}", name : [ `;
+
+        for(let i = 0; i < req.cus.obj.ext.length; i++){
+            if (i !== 0) msg += `, `;
+    
+            msg += `"${req.cus.obj.name[i]}"`;
+        }
+        msg += ` ], count : ${req.cus.obj.ext.length} }`;
+    
+        log.log("WARN", "app.js", msg);
+
         ret.result = false;
         res.json(ret);
         return;
     }
 
-    let msg = `${req.cus.obj.ext.length} Files uploaded { dir : "${req.cus.obj.dir}", name : [ `;
+    let msg = `${req.cus.obj.ext.length} files uploaded { ip : "${ip.getClientIp(req)}", id : "${req.cus.obj.id}", dir : "${req.cus.obj.dir}", name : [ `;
 
     for(let i = 0; i < req.cus.obj.ext.length; i++){
         if (i !== 0) msg += `, `;
@@ -140,14 +152,14 @@ app.post('/login', (req, res) => {
     let ret = {};
 
     if(account.checkLogin(req.body.id, req.body.pw)) {
-        log.log("INFO", "app.js", `Approve login request { id : "${req.body.id}", pw : "${req.body.pw}" }`);
+        log.log("INFO", "app.js", `Approve login request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", pw : "${req.body.pw}" }`);
         ret.result = true;
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
             res.json(ret);
         })
     } else {
-        log.log("WARN", "app.js", `Reject login request { id : "${req.body.id}", pw : "${req.body.pw}" }`);
+        log.log("WARN", "app.js", `Reject login request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", pw : "${req.body.pw}" }`);
         ret.result = false;
         res.json(ret);
     }
@@ -207,11 +219,13 @@ app.post('/rename', (req, res) => {
     if (session.checkSession2(req.body.id, req.body.key).result) {
         ret.rename = disk.rename(req.body.dir, req.body.currname, req.body.newname);
         ret.result = true;
+        log.log("INFO", "app.js", `1 file has been renamed { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", from : "${req.body.currname}", to : "${req.body.newname}" }`);
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
             res.json(ret);
         })
     } else {
+        log.log("WARN", "app.js", `Reject rename request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", from : "${req.body.currname}", to : "${req.body.newname}" }`);
         ret.result = false;
         res.json(ret);
     }
@@ -223,11 +237,13 @@ app.post('/remove', (req, res) => {
     if (session.checkSession2(req.body.id, req.body.key).result) {
         ret.remove = disk.remove(req.body.dir, req.body.target);
         ret.result = true;
+        log.log("INFO", "app.js", `1 file removed { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : "${req.body.target}" }`);
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
             res.json(ret);
         })
     } else {
+        log.log("WARN", "app.js", `Reject remove request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : "${req.body.target}" }`);
         ret.result = false;
         res.json(ret);
     }
@@ -239,11 +255,13 @@ app.post('/changedir', (req, res) => {
     if (session.checkSession2(req.body.id, req.body.key).result) {
         ret.changedir = disk.changedir(req.body.origindir, req.body.newdir);
         ret.result = true;
+        log.log("INFO", "app.js", `1 file moved { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", from : "${req.body.origindir}", to : "${req.body.newdir}" }`);
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
             res.json(ret);
         })
     } else {
+        log.log("WARN", "app.js", `Reject change directory request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", from : "${req.body.origindir}", to : "${req.body.newdir}" }`);
         ret.result = false;
         res.json(ret);
     }
@@ -255,11 +273,13 @@ app.post('/createfolder', (req, res) => {
     if (session.checkSession2(req.body.id, req.body.key).result) {
         ret.createfolder = disk.createfolder(req.body.dir, req.body.name);
         ret.result = true;
+        log.log("INFO", "app.js", `New folder created { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : "${req.body.name}" }`);
         session.createSession(req.body.id).then(function(data){
             ret.session = data;
             res.json(ret);
         })
     } else {
+        log.log("WARN", "app.js", `Reject create folder request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : "${req.body.name}" }`);
         ret.result = false;
         res.json(ret);
     }
@@ -291,8 +311,13 @@ app.get('/download', (req, res) => {
         let getfile = download.getfile(check.obj.dir, check.obj.name);
 
         if (getfile.error) return;
-        else res.download(getfile.target, check.obj.name);
+        else {
+            log.log("INFO", "app.js", `Approve download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.body.file}" }`);
+            res.download(getfile.target, check.obj.name);
+        }
     }
+
+    log.log("WARN", "app.js", `Reject download request { ip : "${ip.getClientIp(req)}", downloadSession : "${req.body.file}" }`);
 
 })
 

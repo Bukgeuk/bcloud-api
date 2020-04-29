@@ -1,6 +1,7 @@
 const disk = require('diskusage');
 const fs = require('fs-extra');
 const path_module = require('path');
+const log = require('./log');
 
 const path = '/media/pi/Cloud';
 
@@ -16,7 +17,7 @@ ex.getSpaceInfo = function(){
         ret.error = false
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in getSpaceInfo()\n${err}`);
     }
 
     return ret;
@@ -52,7 +53,7 @@ ex.getFileList = function(dir){
         ret.error = false;
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in getFileList()\n${err}`);
     }
 
     return ret;
@@ -67,7 +68,7 @@ ex.rename = function(dir, currname, newname){
         ret.error = false;
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in rename()\n${err}`);
     }
 
     return ret;
@@ -81,7 +82,7 @@ ex.changedir = function(currfulldir, newfulldir){
         ret.error = false;
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in changedir()\n${err}`);
     }
 
     return ret;
@@ -96,7 +97,7 @@ ex.remove = function(dir, target){
         ret.error = false;
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in remove()\n${err}`);
     }
 
     return ret;
@@ -125,7 +126,7 @@ ex.createfolder = function(dir, name){
         ret.error = false;
     } catch (err) {
         ret.error = true;
-        console.log(err)
+        log.log("ERROR", "disk.js", `An error has occurred in createfolder()\n${err}`);
     }
 
     return ret;

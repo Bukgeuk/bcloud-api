@@ -86,7 +86,7 @@ function downloadSessionCreate(dir, name){
     })
 }
 
-function uploadSessionCreate(dir, name, ext){
+function uploadSessionCreate(id, dir, name, ext){
     return new Promise(function(resolve, reject){
         crypto.randomBytes(64, function (err, buffer) {
             let ret = {};
@@ -100,6 +100,7 @@ function uploadSessionCreate(dir, name, ext){
 
             if (upload_sessions[key] === undefined) {
                 upload_sessions[key] = {
+                    id : id,
                     dir : dir,
                     name : name,
                     ext : ext
