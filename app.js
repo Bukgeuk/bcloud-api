@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const cors = require('cors');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 
 // import custom modules
 const disk = require('./func/disk');
@@ -76,6 +77,10 @@ let upload = multer({
     })
 })
 
+app.use(rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 100
+}))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(cors());
@@ -160,6 +165,7 @@ app.post('/login', (req, res) => {
         })
     } else {
         log.log("WARN", "app.js", `Reject login request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", pw : "${req.body.pw}" }`);
+        ip.addStack(ip.getClientIp(req));
         ret.result = false;
         res.json(ret);
     }
