@@ -165,7 +165,6 @@ app.post('/login', (req, res) => {
         })
     } else {
         log.log("WARN", "app.js", `Reject login request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", pw : "${req.body.pw}" }`);
-        ip.addStack(ip.getClientIp(req));
         ret.result = false;
         res.json(ret);
     }

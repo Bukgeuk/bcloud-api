@@ -1,5 +1,4 @@
 const requestip = require('request-ip');
-const log = require('./log');
 
 const pattern = /::ffff:/;
 
