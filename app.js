@@ -249,6 +249,45 @@ app.post('/remove', (req, res) => {
     }
 })
 
+app.post('/removemultiple', (req, res) => {
+    let ret = {};
+    
+    if (session.checkSession2(req.body.id, req.body.key).result) {
+        ret.remove = disk.removemultiple(req.body.dir, req.body.target);
+        ret.result = true;
+
+        let msg = `${req.body.target.length} files removed { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : [ `;
+
+        for(let i = 0; i < req.body.target.length; i++){
+            if (i !== 0) msg += `, `;
+    
+            msg += `"${req.body.target[i]}"`;
+        }
+        msg += ` ] }`;
+
+        log.log("INFO", "app.js", msg);
+        
+        session.createSession(req.body.id).then(function(data){
+            ret.session = data;
+            res.json(ret);
+        })
+    } else {
+        let msg = `Reject remove request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", dir : "${req.body.dir}", name : [ `;
+
+        for(let i = 0; i < req.body.target.length; i++){
+            if (i !== 0) msg += `, `;
+    
+            msg += `"${req.body.target[i]}"`;
+        }
+        msg += ` ], count : ${req.body.target.length} }`;
+
+        log.log("WARN", "app.js", msg);
+
+        ret.result = false;
+        res.json(ret);
+    }
+})
+
 app.post('/changedir', (req, res) => {
     let ret = {};
     

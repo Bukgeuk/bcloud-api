@@ -103,6 +103,25 @@ ex.remove = function(dir, target){
     return ret;
 }
 
+ex.removemultiple = function(dir, target){
+    let ret = {};
+
+    try {
+        if (dir.charAt(dir.length - 1) !== '/') dir += '/';
+
+        for(let i = 0; i < target.length; i++){
+            fs.removeSync(path + dir + target[i]);
+        }
+
+        ret.error = false;
+    } catch (err) {
+        ret.error = true;
+        log.log("ERROR", "disk.js", `An error has occurred in removemultiple()\n${err}`);
+    }
+
+    return ret;
+}
+
 ex.createfolder = function(dir, name){
     let ret = {};
 
