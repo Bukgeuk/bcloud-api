@@ -6,8 +6,8 @@ const Account = JSON.parse(fs.readFileSync(path.join(__dirname, 'account.json'),
 
 let ex = {};
 
-ex.getAccountObj = function(){
-    return Account;
+ex.getAccountObj = function(id){
+    return Account[id];
 }
 
 ex.checkLogin = function(username, password){
@@ -15,7 +15,7 @@ ex.checkLogin = function(username, password){
         return false;
     }
 
-    if (Account[username].password === crypto.createHash('sha512').update(password).digest('hex')) {
+    if (Account[username].password === crypto.createHash('sha512').update(password).digest('base64')) {
         return true;
     } else {
         return false;
@@ -23,8 +23,8 @@ ex.checkLogin = function(username, password){
 }
 
 ex.changePassword = function(username, password, newpassword){
-    if(Account[username].password === crypto.createHash('sha512').update(password).digest('hex')){
-        Account[username].password = crypto.createHash('sha512').update(newpassword).digest('hex');
+    if(Account[username].password === crypto.createHash('sha512').update(password).digest('base64')){
+        Account[username].password = crypto.createHash('sha512').update(newpassword).digest('base64');
 
         fs.writeFileSync(path.join(__dirname, 'account.json'), JSON.stringify(Account));
 
@@ -32,6 +32,15 @@ ex.changePassword = function(username, password, newpassword){
     } else {
         return false;
     }
+}
+
+ex.createSalt = function() {
+    return new Promise(function(resolve, reject){
+        crypto.randomBytes(16, function(err, buffer){
+            if(err) reject();
+            else resolve(buffer.toString('base64'));
+        })
+    })
 }
 
 module.exports = ex;

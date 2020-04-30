@@ -7,6 +7,13 @@ const crypto = require('crypto');
 const cors = require('cors');
 const multer = require('multer');
 const rateLimit = require('express-rate-limit');
+const https = require('https');
+
+const option = {
+    ca: fs.readFileSync('/etc/letsencrypt/live/raw.bcloud.kro.kr/fullchain.pem'),
+    key: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/raw.bcloud.kro.kr/privkey.pem'), 'utf8').toString(),
+    cert: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/raw.bcloud.kro.kr/cert.pem'), 'utf8').toString(),
+};
 
 // import custom modules
 const disk = require('./func/disk');
@@ -166,6 +173,21 @@ app.post('/login', (req, res) => {
         })
     } else {
         log.log("WARN", "app.js", `Reject login request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", pw : "${req.body.pw}" }`);
+        ret.result = false;
+        res.json(ret);
+    }
+})
+
+app.post('/salt', (req, res) => {
+    let ret = {};
+
+    let temp = account.getAccountObj(req.body.id);
+
+    if (temp !== undefined) {
+        ret.result = true;
+        ret.salt = temp.salt;
+        res.json(ret);
+    } else {
         ret.result = false;
         res.json(ret);
     }
@@ -391,12 +413,12 @@ app.get('/share', (req, res) => {
     let check = share.getFileByLink(req.query.file);
 
     if (check === undefined) {
-        res.sendfile('shareError.html');
+        res.sendFile(__dirname + '/shareError.html');
     } else {
         res.download(upath + check, check.substr(check.lastIndexOf('/')));
     }
 })
 
-app.listen(port, function() {
+https.createServer(option, app).listen(port, () => {
     log.log("INFO", "app.js", "Server start on port " + port);
 });
