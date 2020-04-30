@@ -180,22 +180,6 @@ app.post('/login', (req, res) => {
     }
 })
 
-app.post('/salt', (req, res) => {
-    let ret = {};
-
-    let temp = account.getAccountObj(req.body.id);
-
-    if (temp !== undefined && temp.raw === crypto.createHash('sha512').update(req.body.pw).digest('base64')) {
-        ret.result = true;
-        ret.salt = temp.salt;
-        
-        res.json(ret);0
-    } else {
-        ret.result = false;
-        res.json(ret);
-    }
-})
-
 app.post('/disk', (req, res) => {
     let ret = {};
 

@@ -1,4 +1,5 @@
 node_modules/
+Log/
 account.json
 linkshare.json
-Log/
+config.json
