@@ -9,10 +9,12 @@ const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const https = require('https');
 
+const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+
 const option = {
-    ca: fs.readFileSync('/etc/letsencrypt/live/raw.bcloud.kro.kr/fullchain.pem'),
-    key: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/raw.bcloud.kro.kr/privkey.pem'), 'utf8').toString(),
-    cert: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/raw.bcloud.kro.kr/cert.pem'), 'utf8').toString(),
+    ca: fs.readFileSync(config.ssl.ca),
+    key: fs.readFileSync(path.resolve(process.cwd(), config.ssl.key), 'utf8').toString(),
+    cert: fs.readFileSync(path.resolve(process.cwd(), config.ssl.cert), 'utf8').toString(),
 };
 
 // import custom modules
@@ -183,10 +185,11 @@ app.post('/salt', (req, res) => {
 
     let temp = account.getAccountObj(req.body.id);
 
-    if (temp !== undefined) {
+    if (temp !== undefined && temp.raw === crypto.createHash('sha512').update(req.body.pw).digest('base64')) {
         ret.result = true;
         ret.salt = temp.salt;
-        res.json(ret);
+        
+        res.json(ret);0
     } else {
         ret.result = false;
         res.json(ret);
