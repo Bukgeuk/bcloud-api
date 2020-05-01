@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 
-const Account = JSON.parse(fs.readFileSync(path.join(__dirname, 'account.json'), 'utf8'));
+const Account = require('../account.json');
 
 function write() {
     let fd = fs.openSync('./account.json', 'w');

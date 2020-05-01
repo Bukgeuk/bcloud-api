@@ -9,7 +9,7 @@ const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const https = require('https');
 
-const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+const config = require('./config.json');
 
 const option = {
     ca: fs.readFileSync(config.ssl.ca),
@@ -19,12 +19,12 @@ const option = {
 
 // import custom modules
 const disk = require('./func/disk');
-const account = require('./account');
+const account = require('./func/account');
 const session = require('./func/session');
 const download = require('./func/download');
 const log = require('./func/log');
 const ip = require('./func/ip');
-const share = require('./linkshare');
+const share = require('./func/linkshare');
 
 const app = express();
 const port = 3000;

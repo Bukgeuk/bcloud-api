@@ -2,7 +2,7 @@ const disk = require('diskusage');
 const fs = require('fs-extra');
 const path_module = require('path');
 const log = require('./log');
-const share = require('../linkshare');
+const share = require('./linkshare');
 
 const path = '/media/pi/Cloud';
 

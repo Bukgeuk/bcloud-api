@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 
-let links = JSON.parse(fs.readFileSync(path.join(__dirname, 'linkshare.json'), 'utf8'));
+let links = require('../linkshare.json');
 let files = {};
 for(let link in links){
     files[links[link]] = link;
