@@ -180,6 +180,32 @@ app.post('/login', (req, res) => {
     }
 })
 
+app.post('/changepassword', (req, res) => {
+    let ret = {};
+
+    if (session.checkSession2(req.body.id, req.body.key).result) {
+        ret.inputerr = !account.changePassword(req.body.id, req.body.pw, req.body.newpw);
+
+        session.createSession(req.body.id).then(function(data){
+            ret.session = data;
+
+            if (!ret.inputerr) {
+                log.log("INFO", "app.js", `Approve change password request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", from : "${req.body.pw}", to : "${req.body.newpw}" }`);
+                ret.result = true;
+            } else {
+                log.log("WARN", "app.js", `Reject change password request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", from : "${req.body.pw}", to : "${req.body.newpw}" }`);
+                ret.result = false;
+            }
+
+            res.json(ret);
+        })
+    } else {
+        log.log("WARN", "app.js", `Reject change password request { ip : "${ip.getClientIp(req)}", id : "${req.body.id}", from : "${req.body.pw}", to : "${req.body.newpw}" }`);
+        ret.result = false;
+        res.json(ret);
+    }
+})
+
 app.post('/disk', (req, res) => {
     let ret = {};
 
