@@ -28,7 +28,7 @@ const share = require('./func/linkshare');
 
 const app = express();
 const port = 3000;
-const upath = '/media/pi/Cloud';
+const upath = '/mnt/Cloud';
 
 let upload = multer({
     fileFilter: function (req, file, cb) {

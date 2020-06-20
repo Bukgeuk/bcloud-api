@@ -4,7 +4,7 @@ const path_module = require('path');
 const log = require('./log');
 const share = require('./linkshare');
 
-const path = '/media/pi/Cloud';
+const path = '/mnt/Cloud';
 
 const SizeUnits = ['B', 'KB', 'MB', 'GB'];
 

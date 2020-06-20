@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 
-const path = '/media/pi/Cloud';
+const path = '/mnt/Cloud';
 
 var ex = {};
 
